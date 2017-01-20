@@ -23,7 +23,6 @@ server.route({
             payload: {
                 stationId: Joi.number().required().integer().min(0),
                 waveTime: Joi.number().required().integer().min(0).max(1000),
-                hasGuessedFull: Joi.boolean().required()
             }
         }
     }
@@ -36,13 +35,13 @@ server.route({
         console.log(request.payload);
         return reply({
             statusCode: 201,
-            message: 'Sensor data saved successfully.' });
+            message: 'Spot occupation saved successfully.' });
     },
     config: {
         validate: {
             payload: {
                 stationId: Joi.number().required().integer().min(0),
-                hasGuessedFull: Joi.boolean().required()
+                isOccupied: Joi.boolean().required()
             }
         }
     }
