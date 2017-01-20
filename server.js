@@ -47,6 +47,19 @@ server.route({
     }
 });
 
+server.route({
+    method: 'GET',
+    path:'/spot',
+    handler: function (request, reply) {
+        console.log(request.payload);
+        return reply({
+            statusCode: 200,
+            message: 'Spot data fetched successfully.',
+            data: {}
+        });
+    }
+});
+
 server.start((err) => {
     if (err) {
         throw err;
