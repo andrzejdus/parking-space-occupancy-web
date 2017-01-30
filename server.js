@@ -5,24 +5,25 @@ const Joi = require('joi');
 
 const server = new Hapi.Server();
 server.connection({
-    host: 'localhost',
-    port: 8000
+    port: process.env.PORT || 8000
 });
 
 server.route({
     method: 'POST',
     path:'/measurement',
     handler: function (request, reply) {
+        console.log('POST /measurement');
         console.log(request.payload);
         return reply({
-            statusCode: 201,
-            message: 'Measurement saved successfully.' });
+            statusCode: 200,
+            message: 'Measurement saved successfully.'
+        });
     },
     config: {
         validate: {
             payload: {
-                stationId: Joi.number().required().integer().min(0),
-                waveTime: Joi.number().required().integer().min(0).max(1000),
+                macAddress: Joi.string().required(),
+                distance: Joi.number().required().integer(),
             }
         }
     }
@@ -32,15 +33,17 @@ server.route({
     method: 'POST',
     path:'/occupied',
     handler: function (request, reply) {
+        console.log('POST /occupied');
         console.log(request.payload);
         return reply({
-            statusCode: 201,
-            message: 'Spot occupation saved successfully.' });
+            statusCode: 200,
+            message: 'Spot occupation saved successfully.'
+        });
     },
     config: {
         validate: {
             payload: {
-                stationId: Joi.number().required().integer().min(0),
+                macAddress: Joi.string().required(),
                 isOccupied: Joi.boolean().required()
             }
         }
@@ -49,13 +52,16 @@ server.route({
 
 server.route({
     method: 'GET',
-    path:'/spot',
+    path:'/calibration',
     handler: function (request, reply) {
-        console.log(request.payload);
+        console.log('GET /calibration');
         return reply({
             statusCode: 200,
-            message: 'Spot data fetched successfully.',
-            data: {}
+            message: 'Calibration data sent successfully.',
+            data: {
+                distanceHysteresis: 25,
+                splitDistance: 150
+            }
         });
     }
 });
