@@ -1,0 +1,21 @@
+{
+	"type": "Collection",
+	"properties": {
+		"macAddress": {
+			"name": "macAddress",
+			"type": "string",
+			"typeLabel": "string",
+			"required": true,
+			"id": "macAddress",
+			"order": 0
+		},
+		"distance": {
+			"name": "distance",
+			"type": "number",
+			"typeLabel": "number",
+			"required": true,
+			"id": "distance",
+			"order": 1
+		}
+	}
+}
