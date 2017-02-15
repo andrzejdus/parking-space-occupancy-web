@@ -4,7 +4,7 @@ let server = deployd({
   port: process.env.PORT || 8000,
   env: 'production',
   db: {
-    connectionString: process.env.MONGODB_URI || 'mongodb://heroku_xd5vwxrx:l57ba6l0qaufndgcphmt2g06vq@ds149489.mlab.com:49489/heroku_xd5vwxrx'
+    connectionString: process.env.MONGODB_URI
   }
 });
 
