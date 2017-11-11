@@ -23,7 +23,7 @@ server.route({
         validate: {
             payload: {
                 macAddress: Joi.string().required(),
-                distance: Joi.number().required().integer(),
+                distance: Joi.number().required()
             }
         }
     }
@@ -38,6 +38,7 @@ server.route({
             statusCode: 200,
             message: 'Calibration data sent successfully.',
             data: {
+                measurmentInterval: 3000,
                 distanceHysteresis: 25,
                 splitDistance: 150
             }
