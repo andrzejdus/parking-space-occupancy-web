@@ -5,7 +5,7 @@ const Joi = require('joi');
 
 const server = new Hapi.Server();
 server.connection({
-    port: process.env.PORT || 8000
+    port: process.env.PORT || 2403
 });
 
 server.route({
