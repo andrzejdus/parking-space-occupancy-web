@@ -30,27 +30,6 @@ server.route({
 });
 
 server.route({
-    method: 'POST',
-    path:'/occupied',
-    handler: function (request, reply) {
-        console.log('POST /occupied');
-        console.log(request.payload);
-        return reply({
-            statusCode: 200,
-            message: 'Spot occupation saved successfully.'
-        });
-    },
-    config: {
-        validate: {
-            payload: {
-                macAddress: Joi.string().required(),
-                isOccupied: Joi.boolean().required()
-            }
-        }
-    }
-});
-
-server.route({
     method: 'GET',
     path:'/calibration',
     handler: function (request, reply) {
