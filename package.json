@@ -5,7 +5,10 @@
   "repository": "git@github.com:andrzejdus/orange-sensors-api.git",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "watch": "webpack-dev-server --open --config webpack.dev.js",
+    "build": "webpack --config webpack.prod.js",
+    "prestart": "npm run build"
   },
   "author": "Andrzej Duś",
   "license": "MIT",
@@ -14,8 +17,19 @@
   },
   "dependencies": {
     "aws-sdk": "^2.149.0",
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-minify": "^0.2.0",
+    "babel-preset-react": "^6.24.1",
     "hapi": "^16.0.1",
+    "html-webpack-plugin": "^2.30.1",
     "inert": "^4.0.0",
-    "joi": "^13.0.1"
+    "joi": "^13.0.1",
+    "react": "^16.1.0",
+    "react-dom": "^16.1.0",
+    "webpack": "^3.8.1",
+    "webpack-dev-server": "^2.9.4",
+    "webpack-merge": "^4.1.1"
   }
 }
