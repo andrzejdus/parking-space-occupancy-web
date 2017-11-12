@@ -9,7 +9,7 @@
   "author": "Andrzej Dus",
   "license": "MIT",
   "dependencies": {
-    "hapi": "^16.1.0",
-    "joi": "^10.2.0"
+    "hapi": "^16.6.2",
+    "joi": "^13.0.1"
   }
 }
