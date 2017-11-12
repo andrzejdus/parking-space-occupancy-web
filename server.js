@@ -10,7 +10,6 @@ console.log('Region is ', process.env.REGION);
 console.log('Measurements table is ', process.env.MEASUREMENTS_TABLE);
 
 const server = new Hapi.Server({ debug: { request: ['error'] } });
-//const server = new Hapi.Server();
 server.connection({
     port: process.env.PORT || 2403
 });
