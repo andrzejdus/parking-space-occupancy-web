@@ -9,6 +9,7 @@
   "author": "Andrzej Dus",
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.149.0",
     "hapi": "^16.6.2",
     "joi": "^13.0.1"
   }

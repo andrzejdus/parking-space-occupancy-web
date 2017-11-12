@@ -2,6 +2,12 @@
 
 const Hapi = require('hapi');
 const Joi = require('joi');
+const AWS = require('aws-sdk');
+
+console.log('--- Starting server ---');
+console.log('Port is ', process.env.PORT);
+console.log('Region is ', process.env.REGION);
+console.log('Measurements table is ', process.env.MEASUREMENTS_TABLE);
 
 const server = new Hapi.Server({ debug: { request: ['error'] } });
 //const server = new Hapi.Server();
@@ -9,12 +15,35 @@ server.connection({
     port: process.env.PORT || 2403
 });
 
+AWS.config.region = process.env.REGION;
+const ddb = new AWS.DynamoDB();
+
 server.route({
     method: 'POST',
     path:'/measurement',
     handler: function (request, reply) {
         console.log('POST /measurement');
-        console.log(request.payload);
+
+        const payloadDecoded = request.payload;
+        console.log(payloadDecoded);
+
+        const item = {
+            'timestamp': {'N': Date.now().toString()},
+            'distance': {'N': payloadDecoded.distance.toString()},
+            'macAddress': {'S': payloadDecoded.macAddress}
+        };
+
+        ddb.putItem({
+            'TableName': process.env.MEASUREMENTS_TABLE,
+            'Item': item
+        }, function(err, data) {
+            if (err) {
+                console.log('DDB error: ' + err);
+            } else {
+                console.log('DDB ok');
+            }
+        });
+
         return reply({
             statusCode: 200,
             message: 'Measurement saved successfully.'
@@ -52,5 +81,5 @@ server.start((err) => {
         throw err;
     }
 
-    console.log('Server running at:', server.info.uri);
+    console.log('Server running at: ', server.info.uri);
 });
