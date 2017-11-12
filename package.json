@@ -1,16 +1,21 @@
 {
-  "name": "orange-sensors-api",
-  "version": "0.1.0",
-  "description": "",
+  "name": "orange-sensors-web",
+  "version": "0.2.0",
+  "description": "Web app for parking occupation sensors",
+  "repository": "git@github.com:andrzejdus/orange-sensors-api.git",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Andrzej Dus",
+  "author": "Andrzej Duś",
   "license": "MIT",
+  "engines": {
+    "node": ">=6"
+  },
   "dependencies": {
     "aws-sdk": "^2.149.0",
-    "hapi": "^16.6.2",
+    "hapi": "^16.0.1",
+    "inert": "^4.0.0",
     "joi": "^13.0.1"
   }
 }
