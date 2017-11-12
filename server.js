@@ -3,7 +3,8 @@
 const Hapi = require('hapi');
 const Joi = require('joi');
 
-const server = new Hapi.Server();
+const server = new Hapi.Server({ debug: { request: ['error'] } });
+//const server = new Hapi.Server();
 server.connection({
     port: process.env.PORT || 2403
 });
@@ -38,7 +39,7 @@ server.route({
             statusCode: 200,
             message: 'Calibration data sent successfully.',
             data: {
-                measurmentInterval: 3000,
+                measurementInterval: 3000,
                 distanceHysteresis: 25,
                 splitDistance: 150
             }
