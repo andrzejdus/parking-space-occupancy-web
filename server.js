@@ -4,7 +4,7 @@ const webpackServer = require('./webpackServer');
 const apiServer = require('./server/apiServer');
 
 const PORT = process.env.PORT || 8080;
-const PROD = process.env.NODE_ENV === 'prod';
+const PROD = process.env.NODE_ENV === 'production';
 
 if (PROD) {
     console.log('Running production server');
