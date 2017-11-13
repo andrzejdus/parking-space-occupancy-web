@@ -10,15 +10,15 @@ module.exports = (PORT) => {
     const MEASUREMENTS_TABLE = process.env.MEASUREMENTS_TABLE;
     const ALLOWED_MAC_ADDRESSES_TABLE = process.env.ALLOWED_MAC_ADDRESSES_TABLE;
 
-    console.log('--- Starting server ---');
-    console.log('Port is ', PORT);
-    console.log('Region is ', REGION);
-    console.log('Measurements table is ', MEASUREMENTS_TABLE);
-    console.log('Allowed mac address table is ', ALLOWED_MAC_ADDRESSES_TABLE);
+    console.log('Starting server');
+    console.log('Port is', PORT);
+    console.log('Region is', REGION);
+    console.log('Measurements table is', MEASUREMENTS_TABLE);
+    console.log('Allowed mac address table is', ALLOWED_MAC_ADDRESSES_TABLE);
 
     const server = new Hapi.Server({ debug: { request: ['error'] } });
     server.connection({
-        port: PORT || 2403
+        port: PORT
     });
 
     AWS.config.region = REGION;
@@ -30,7 +30,7 @@ module.exports = (PORT) => {
         'ReturnConsumedCapacity': 'TOTAL'
     }).promise().then(function (data) {
         data.Items.forEach(function (element) {
-            console.log(element.S);
+            console.log('Found mac address', element.S);
             allowedMacAddreses.push(element.S);
         });
 
