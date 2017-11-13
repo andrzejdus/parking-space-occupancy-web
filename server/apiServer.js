@@ -8,13 +8,13 @@ const AWS = require('aws-sdk');
 module.exports = (PORT) => {
     const REGION = process.env.REGION;
     const MEASUREMENTS_TABLE = process.env.MEASUREMENTS_TABLE;
-    const ALLOWED_MAC_ADDRESSES_TABLE = process.env.ALLOWED_MAC_ADDRESSES_TABLE;
+    const STATION_IDS_TABLE = process.env.STATION_IDS_TABLE;
 
     console.log('Starting server');
     console.log('Port is', PORT);
     console.log('Region is', REGION);
     console.log('Measurements table is', MEASUREMENTS_TABLE);
-    console.log('Allowed mac address table is', ALLOWED_MAC_ADDRESSES_TABLE);
+    console.log('Allowed station IDs table is', STATION_IDS_TABLE);
 
     const server = new Hapi.Server({ debug: { request: ['error'] } });
     server.connection({
@@ -24,18 +24,20 @@ module.exports = (PORT) => {
     AWS.config.region = REGION;
     const ddb = new AWS.DynamoDB();
 
-    let allowedMacAddreses = [];
+    let allowedStationIds = [];
     ddb.scan({
-        'TableName': ALLOWED_MAC_ADDRESSES_TABLE,
+        'TableName': STATION_IDS_TABLE,
         'ReturnConsumedCapacity': 'TOTAL'
     }).promise().then(function (data) {
         data.Items.forEach(function (element) {
-            console.log('Allowing MAC address', element.MacAddress.S);
-            allowedMacAddreses.push(element.MacAddress.S);
+            const stationId = element.StationId.S;
+            console.log('Allowing station ID', stationId);
+
+            allowedStationIds.push(stationId);
         });
 
-    }, function (error) {
-        console.log('Cannot get allowed mac addresses from database, error', error);
+    }).catch(function (error) {
+        console.log('Cannot get allowed station IDs from database, error', error);
     });
 
     server.route({
@@ -47,20 +49,20 @@ module.exports = (PORT) => {
             const payloadDecoded = request.payload;
             console.log(payloadDecoded);
 
-            const macAddress = payloadDecoded.macAddress;
+            const stationId = payloadDecoded.stationId;
 
-            if (!allowedMacAddreses.includes(macAddress)) {
+            if (!allowedStationIds.includes(stationId)) {
                 return reply({
                     statusCode: 400,
-                    message: 'MAC address not allowed.'
+                    message: 'Station ID not allowed.'
                 });
             }
 
             const itemTimestamp = Date.now().toString();
             const item = {
                 'timestamp': {'N': itemTimestamp},
-                'distance': {'N': payloadDecoded.distance.toString()},
-                'macAddress': {'S': macAddress}
+                'stationId': {'S': stationId},
+                'distance': {'N': payloadDecoded.distance.toString()}
             };
 
             const response = reply(new Promise(function (resolve, reject) {
@@ -92,7 +94,7 @@ module.exports = (PORT) => {
         config: {
             validate: {
                 payload: {
-                    macAddress: Joi.string().required(),
+                    stationId: Joi.string().required(),
                     distance: Joi.number().required()
                 }
             }
@@ -101,9 +103,25 @@ module.exports = (PORT) => {
 
     server.route({
         method: 'GET',
+        path: '/station/{id}',
+        handler: function (request, reply) {
+            console.log('GET /station/{id}');
+
+            return reply({
+                statusCode: 200,
+                message: 'Station data sent successfully.',
+                data: {
+                }
+            });
+        }
+    });
+
+    server.route({
+        method: 'GET',
         path:'/calibration',
         handler: function (request, reply) {
             console.log('GET /calibration');
+
             return reply({
                 statusCode: 200,
                 message: 'Calibration data sent successfully.',

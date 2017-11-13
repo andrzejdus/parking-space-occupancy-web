@@ -8,7 +8,8 @@
     "start": "node server.js",
     "watch": "node server.js",
     "build": "webpack --config webpack.prod.js",
-    "prestart": "npm run build"
+    "prestart": "npm run build",
+    "create-tables": "node server/createTables.js"
   },
   "author": "Andrzej Duś",
   "license": "MIT",

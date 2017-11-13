@@ -4,22 +4,22 @@ require('dotenv').config();
 const AWS = require('aws-sdk');
 
 const REGION = process.env.REGION;
-const ALLOWED_MAC_ADDRESSES_TABLE = process.env.ALLOWED_MAC_ADDRESSES_TABLE;
+const STATION_IDS_TABLE = process.env.STATION_IDS_TABLE;
 
 AWS.config.region = REGION;
 const ddb = new AWS.DynamoDB();
 
 ddb.createTable({
-    "TableName": ALLOWED_MAC_ADDRESSES_TABLE,
+    "TableName": STATION_IDS_TABLE,
     "AttributeDefinitions": [
         {
-            "AttributeName": "MacAddress",
+            "AttributeName": "StationId",
             "AttributeType": "S"
         }
     ],
     "KeySchema": [
         {
-            "AttributeName": "MacAddress",
+            "AttributeName": "StationId",
             "KeyType": "HASH"
         }
     ],
