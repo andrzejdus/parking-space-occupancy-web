@@ -56,27 +56,38 @@ module.exports = (PORT) => {
                 });
             }
 
+            const itemTimestamp = Date.now().toString();
             const item = {
-                'timestamp': {'N': Date.now().toString()},
+                'timestamp': {'N': itemTimestamp},
                 'distance': {'N': payloadDecoded.distance.toString()},
                 'macAddress': {'S': macAddress}
             };
 
-            ddb.putItem({
-                'TableName': MEASUREMENTS_TABLE,
-                'Item': item
-            }, function(err, data) {
-                if (err) {
-                    console.log('DDB error: ' + err);
-                } else {
-                    console.log('DDB ok');
-                }
-            });
+            const response = reply(new Promise(function (resolve, reject) {
+                ddb.putItem({
+                    'TableName': MEASUREMENTS_TABLE,
+                    'Item': item
+                }, function(err, data) {
+                    if (err) {
+                        console.log('Error saving data in database: ' + err);
 
-            return reply({
-                statusCode: 200,
-                message: 'Measurement saved successfully.'
-            });
+                        reject({
+                            statusCode: 500,
+                            message: 'Measurement save failed, error: ' + err
+                        });
+                    } else {
+                        console.log('Data saved in database');
+
+                        response.created(request.path + '/' + itemTimestamp);
+                        resolve({
+                            statusCode: 201,
+                            message: 'Measurement saved successfully.'
+                        });
+                    }
+                });
+            }));
+
+            return response;
         },
         config: {
             validate: {
