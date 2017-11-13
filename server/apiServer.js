@@ -35,7 +35,7 @@ module.exports = (PORT) => {
         });
 
     }, function (error) {
-        console.log('Cannot get allowed mac addresses, error', error);
+        console.log('Cannot get allowed mac addresses from database, error', error);
     });
 
     server.route({
