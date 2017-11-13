@@ -30,8 +30,8 @@ module.exports = (PORT) => {
         'ReturnConsumedCapacity': 'TOTAL'
     }).promise().then(function (data) {
         data.Items.forEach(function (element) {
-            console.log('Found mac address', element.S);
-            allowedMacAddreses.push(element.S);
+            console.log('Allowing MAC address', element.MacAddress.S);
+            allowedMacAddreses.push(element.MacAddress.S);
         });
 
     }, function (error) {
