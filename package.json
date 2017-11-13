@@ -6,7 +6,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "watch": "webpack-dev-server --open --config webpack.dev.js",
+    "watch": "node server.js",
     "build": "webpack --config webpack.prod.js",
     "prestart": "npm run build"
   },
@@ -22,12 +22,16 @@
     "babel-preset-env": "^1.6.1",
     "babel-preset-minify": "^0.2.0",
     "babel-preset-react": "^6.24.1",
+    "dotenv": "^4.0.0",
     "hapi": "^16.0.1",
     "html-webpack-plugin": "^2.30.1",
     "inert": "^4.0.0",
     "joi": "^13.0.1",
     "react": "^16.1.0",
     "react-dom": "^16.1.0",
+    "react-google-login": "^3.0.2",
+    "react-router-dom": "^4.2.2",
+    "redux": "^3.7.2",
     "webpack": "^3.8.1",
     "webpack-dev-server": "^2.9.4",
     "webpack-merge": "^4.1.1"
