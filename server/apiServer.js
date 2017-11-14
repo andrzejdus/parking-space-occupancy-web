@@ -60,9 +60,9 @@ module.exports = (PORT) => {
 
             const itemTimestamp = Date.now().toString();
             const item = {
-                'timestamp': {'N': itemTimestamp},
-                'stationId': {'S': stationId},
-                'distance': {'N': payloadDecoded.distance.toString()}
+                'Timestamp': {'N': itemTimestamp},
+                'StationId': {'S': stationId},
+                'Distance': {'N': payloadDecoded.distance.toString()}
             };
 
             const response = reply(new Promise(function (resolve, reject) {
