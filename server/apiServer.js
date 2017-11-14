@@ -10,6 +10,11 @@ module.exports = (PORT) => {
     const MEASUREMENTS_TABLE = process.env.MEASUREMENTS_TABLE;
     const STATION_IDS_TABLE = process.env.STATION_IDS_TABLE;
 
+    // TODO What future will bring us? Noboady knows, but those values may be fetched from db someday (they say so)
+    const measurementInterval = 3000;
+    const distanceHysteresis = 25;
+    const splitDistance = 150;
+
     console.log('Starting server');
     console.log('Port is', PORT);
     console.log('Region is', REGION);
@@ -107,12 +112,48 @@ module.exports = (PORT) => {
         handler: function (request, reply) {
             console.log('GET /station/{id}');
 
-            return reply({
-                statusCode: 200,
-                message: 'Station data sent successfully.',
-                data: {
+            const params = {
+                TableName : MEASUREMENTS_TABLE,
+                ScanIndexForward: false,
+                Limit: 1,
+                KeyConditionExpression: 'StationId = :requestedStationId',
+                ExpressionAttributeValues: {
+                    ':requestedStationId': { 'S': request.params.id }
                 }
-            });
+            };
+
+            return reply(new Promise(function (resolve, reject) {
+                ddb.query(params).promise().then(function (data) {
+                    if (data.Count > 0) {
+                        const recentDistance = parseFloat(data.Items.shift().Distance.N);
+
+                        const stationStatus = recentDistance > splitDistance ? 'unoccupied' : 'occupied';
+
+                        resolve({
+                            statusCode: 200,
+                            message: 'Station data sent successfully.',
+                            data: {
+                                stationStatus: stationStatus
+                            }
+                        });
+                    } else {
+                        console.log('No data returned');
+
+                        reject();
+                    }
+                }).catch(function (error) {
+                    console.log(error);
+
+                    reject();
+                });
+            }));
+        },
+        config: {
+            validate: {
+                params: {
+                    id: Joi.string().required()
+                }
+            }
         }
     });
 
