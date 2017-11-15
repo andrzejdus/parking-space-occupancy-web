@@ -112,20 +112,22 @@ module.exports = (PORT) => {
         handler: function (request, reply) {
             console.log('GET /station/{id}');
 
+            const stationId = request.params.id;
             const params = {
                 TableName : MEASUREMENTS_TABLE,
                 ScanIndexForward: false,
                 Limit: 1,
                 KeyConditionExpression: 'StationId = :requestedStationId',
                 ExpressionAttributeValues: {
-                    ':requestedStationId': { 'S': request.params.id }
+                    ':requestedStationId': { 'S': stationId }
                 }
             };
 
             return reply(new Promise(function (resolve, reject) {
                 ddb.query(params).promise().then(function (data) {
                     if (data.Count > 0) {
-                        const recentDistance = parseFloat(data.Items.shift().Distance.N);
+                        const item = data.Items.shift();
+                        const recentDistance = parseFloat(item.Distance.N);
 
                         const stationStatus = recentDistance > splitDistance ? 'unoccupied' : 'occupied';
 
@@ -133,13 +135,15 @@ module.exports = (PORT) => {
                             statusCode: 200,
                             message: 'Station data sent successfully.',
                             data: {
+                                lastMeasureTimestamp: item.Timestamp.N,
                                 stationStatus: stationStatus
                             }
                         });
                     } else {
-                        console.log('No data returned');
-
-                        reject();
+                        resolve({
+                            statusCode: 404,
+                            message: `Station with id ${stationId} not found.`
+                        });
                     }
                 }).catch(function (error) {
                     console.log(error);
