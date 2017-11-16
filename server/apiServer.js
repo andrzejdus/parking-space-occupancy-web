@@ -33,22 +33,21 @@ module.exports = (PORT) => {
     ddb.scan({
         'TableName': STATION_IDS_TABLE,
         'ReturnConsumedCapacity': 'TOTAL'
-    }).promise().then(function (data) {
+    }).promise().then((data) => {
         data.Items.forEach(function (element) {
             const stationId = element.StationId.S;
             console.log('Allowing station ID', stationId);
 
             allowedStationIds.push(stationId);
         });
-
-    }).catch(function (error) {
+    }).catch((error) => {
         console.log('Cannot get allowed station IDs from database, error', error);
     });
 
     server.route({
         method: 'POST',
         path:'/measurement',
-        handler: function (request, reply) {
+        handler: (request, reply) => {
             console.log('POST /measurement');
 
             const payloadDecoded = request.payload;
@@ -70,11 +69,11 @@ module.exports = (PORT) => {
                 'Distance': {'N': payloadDecoded.distance.toString()}
             };
 
-            const response = reply(new Promise(function (resolve, reject) {
+            const response = reply(new Promise((resolve, reject) => {
                 ddb.putItem({
                     'TableName': MEASUREMENTS_TABLE,
                     'Item': item
-                }, function(err, data) {
+                }, (err, data) => {
                     if (err) {
                         console.log('Error saving data in database: ' + err);
 
@@ -109,7 +108,7 @@ module.exports = (PORT) => {
     server.route({
         method: 'GET',
         path: '/station/{id}',
-        handler: function (request, reply) {
+        handler: (request, reply) => {
             console.log('GET /station/{id}');
 
             const stationId = request.params.id;
@@ -123,8 +122,8 @@ module.exports = (PORT) => {
                 }
             };
 
-            return reply(new Promise(function (resolve, reject) {
-                ddb.query(params).promise().then(function (data) {
+            return reply(new Promise((resolve, reject) => {
+                ddb.query(params).promise().then((data) => {
                     if (data.Count > 0) {
                         const item = data.Items.shift();
                         const recentDistance = parseFloat(item.Distance.N);
@@ -145,7 +144,7 @@ module.exports = (PORT) => {
                             message: `Station with id ${stationId} not found.`
                         });
                     }
-                }).catch(function (error) {
+                }).catch((error) => {
                     console.log(error);
 
                     reject();
@@ -188,7 +187,7 @@ module.exports = (PORT) => {
         server.route({
             method: 'GET',
             path: '/{param*}',
-            handler: function (request, h) {
+            handler: (request, h) => {
                 console.log('GET /{param*}');
 
                 let file = request.path.split('/').pop();
