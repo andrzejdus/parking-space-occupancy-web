@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
+import Station from './Station';
 
 class Main extends Component {
     render() {
         return (
             <div>
-                <div>Stanowisko <span>1</span> <span>ZAJĘTE</span></div>
+                <Station />
                 <div><a href="/admin">Admin</a></div>
             </div>
         )
