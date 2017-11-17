@@ -5,6 +5,7 @@ const common = require('./webpack.common.js');
 module.exports = merge(common, {
     devtool: 'inline-source-map',
     plugins: [
+        new webpack.HashedModuleIdsPlugin(),
         new webpack.optimize.UglifyJsPlugin({
             compressor: {
                 warnings: false

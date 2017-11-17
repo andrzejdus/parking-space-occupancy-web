@@ -1,5 +1,6 @@
 const path = require('path');
 const webpack = require('webpack');
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
@@ -12,7 +13,7 @@ const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
 module.exports = {
     entry: './src/index.js',
     output: {
-        filename: 'index.js',
+        filename: '[name].[chunkhash].js',
         path: path.resolve(__dirname, 'dist')
     },
     module: {
@@ -38,15 +39,21 @@ module.exports = {
         }]
     },
     plugins: [
-        HtmlWebpackPluginConfig,
+        new CleanWebpackPlugin(['dist']),
+        new webpack.HashedModuleIdsPlugin(),
         new webpack.optimize.CommonsChunkPlugin({
             name: 'node-static',
-            filename: 'node-static.js',
+            filename: '[name].[chunkhash].js',
             minChunks(module, count) {
-                var context = module.context;
+                const context = module.context;
                 return context && context.indexOf('node_modules') >= 0;
             },
         }),
-        new ExtractTextPlugin('styles.css')
+        new ExtractTextPlugin('styles.css'),
+        new HtmlWebpackPlugin({
+            template: './src/index.html',
+            filename: 'index.html',
+            inject: 'body'
+        })
     ]
 };
