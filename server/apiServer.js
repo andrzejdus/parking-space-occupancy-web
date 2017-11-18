@@ -4,6 +4,7 @@ require('dotenv').config();
 const Hapi = require('hapi');
 const Joi = require('joi');
 const AWS = require('aws-sdk');
+const fs = require('fs');
 
 module.exports = (PORT) => {
     const REGION = process.env.REGION;
@@ -193,11 +194,7 @@ module.exports = (PORT) => {
                 let file = request.path.split('/').pop();
                 let path = 'dist/';
 
-                if (file == 'index.js') {
-                    path += file;
-                } else {
-                    path += 'index.html';
-                }
+                path += fs.lstatSync(path + file).isFile() ? file : 'index.html';
 
                 return h.file(path);
             }
