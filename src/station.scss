@@ -3,7 +3,11 @@
     margin: 0;
   }
 
-  &__id, &__state {
+  &__title, &__id, &__state {
     text-align: center;
+  }
+
+  &__id, &__state {
+    font-size: 2em;
   }
 }
