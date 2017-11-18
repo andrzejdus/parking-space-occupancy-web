@@ -5,6 +5,7 @@ const Hapi = require('hapi');
 const Joi = require('joi');
 const AWS = require('aws-sdk');
 const fs = require('fs');
+const socketIo = require('socket.io');
 
 module.exports = (PORT) => {
     const REGION = process.env.REGION;
@@ -26,6 +27,7 @@ module.exports = (PORT) => {
     server.connection({
         port: PORT
     });
+    const io = socketIo(server.listener);
 
     AWS.config.region = REGION;
     const ddb = new AWS.DynamoDB();
@@ -65,9 +67,9 @@ module.exports = (PORT) => {
 
             const itemTimestamp = Date.now().toString();
             const item = {
-                'Timestamp': {'N': itemTimestamp},
-                'StationId': {'S': stationId},
-                'Distance': {'N': payloadDecoded.distance.toString()}
+                'Timestamp': { 'N': itemTimestamp },
+                'StationId': { 'S': stationId },
+                'Distance': { 'N': payloadDecoded.distance.toString() }
             };
 
             const response = reply(new Promise((resolve, reject) => {
@@ -101,61 +103,6 @@ module.exports = (PORT) => {
                 payload: {
                     stationId: Joi.string().required(),
                     distance: Joi.number().required()
-                }
-            }
-        }
-    });
-
-    server.route({
-        method: 'GET',
-        path: '/station/{id}',
-        handler: (request, reply) => {
-            console.log('GET /station/{id}');
-
-            const stationId = request.params.id;
-            const params = {
-                TableName : MEASUREMENTS_TABLE,
-                ScanIndexForward: false,
-                Limit: 1,
-                KeyConditionExpression: 'StationId = :requestedStationId',
-                ExpressionAttributeValues: {
-                    ':requestedStationId': { 'S': stationId }
-                }
-            };
-
-            return reply(new Promise((resolve, reject) => {
-                ddb.query(params).promise().then((data) => {
-                    if (data.Count > 0) {
-                        const item = data.Items.shift();
-                        const recentDistance = parseFloat(item.Distance.N);
-
-                        const stationStatus = recentDistance > splitDistance ? 'unoccupied' : 'occupied';
-
-                        resolve({
-                            statusCode: 200,
-                            message: 'Station data sent successfully.',
-                            data: {
-                                lastMeasureTimestamp: item.Timestamp.N,
-                                stationStatus: stationStatus
-                            }
-                        });
-                    } else {
-                        resolve({
-                            statusCode: 404,
-                            message: `Station with id ${stationId} not found.`
-                        });
-                    }
-                }).catch((error) => {
-                    console.log(error);
-
-                    reject();
-                });
-            }));
-        },
-        config: {
-            validate: {
-                params: {
-                    id: Joi.string().required()
                 }
             }
         }
@@ -201,6 +148,17 @@ module.exports = (PORT) => {
         });
     });
 
+    io.on('connection', function (socket) {
+        const emitStation = () => {
+            fetchStation('18fe34d3f4c9').then((station) => {
+                socket.emit('occupation', station);
+                setTimeout(emitStation, 500);
+            });
+        };
+
+        setTimeout(emitStation, 0);
+    });
+
     server.start((err) => {
         if (err) {
             throw err;
@@ -208,4 +166,45 @@ module.exports = (PORT) => {
 
         console.log('Server running at: ', server.info.uri);
     });
+
+    function fetchStation(stationId) {
+        const params = {
+            TableName : MEASUREMENTS_TABLE,
+            ScanIndexForward: false,
+            Limit: 1,
+            KeyConditionExpression: 'StationId = :requestedStationId',
+            ExpressionAttributeValues: {
+                ':requestedStationId': { 'S': stationId }
+            }
+        };
+
+        return new Promise((resolve, reject) => {
+            ddb.query(params).promise().then((data) => {
+                if (data.Count > 0) {
+                    const item = data.Items.shift();
+                    const recentDistance = parseFloat(item.Distance.N);
+
+                    const stationStatus = recentDistance > splitDistance ? 'unoccupied' : 'occupied';
+
+                    resolve({
+                        statusCode: 200,
+                        message: 'Station data sent successfully.',
+                        data: {
+                            lastMeasureTimestamp: item.Timestamp.N,
+                            stationStatus: stationStatus
+                        }
+                    });
+                } else {
+                    resolve({
+                        statusCode: 404,
+                        message: `Station with id ${stationId} not found.`
+                    });
+                }
+            }).catch((error) => {
+                console.log(error);
+
+                reject(error);
+            });
+        });
+    }
 };

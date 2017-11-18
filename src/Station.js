@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
+import socket from 'socket.io-client';
 import './station.scss';
-
 
 class Station extends Component {
     constructor(props) {
@@ -8,12 +8,19 @@ class Station extends Component {
 
         this.state = { isOccupied: null };
 
-        this.updateStationData();
+        const io = socket('/');
+        function subscribeToTimer(callback) {
+            io.on('occupation', (station) => {callback(station)});
+        }
+
+        subscribeToTimer((station) => {
+            this.setState({ isOccupied: station.data.stationStatus == 'occupied' ? true : false })
+        });
     }
 
     render() {
         let isOccupiedValue = 'POBIERANIE';
-        console.log(this.state.isOccupied);
+        console.log('Is station occupied?', this.state.isOccupied);
         if (this.state.isOccupied) {
             isOccupiedValue = 'ZAJĘTĘ';
         } else if (!this.state.isOccupied) {
@@ -27,15 +34,6 @@ class Station extends Component {
                 <div className={'station__state'}>{isOccupiedValue}</div>
             </section>
         )
-    }
-
-    updateStationData() {
-        fetch('/station/18fe34d3f4c9')
-            .then((response) => (response.json()))
-            .then((json) => {
-                console.log(json.data.stationStatus == 'occupied');
-                this.setState({isOccupied: json.data.stationStatus == 'occupied' ? true : false})
-            });
     }
 }
 
