@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project version="4">
-  <component name="EBConfigMappings">
-    <file url="file://$PROJECT_DIR$/.ebextensions/00_change_npm_permissions.config" dialect="EB-EXT-YAML" />
-  </component>
-</project>
