@@ -6,14 +6,26 @@ class Station extends Component {
     constructor(props) {
         super(props);
 
-        this.state = {};
+        this.state = { isOccupied: null };
 
         this.updateStationData();
     }
 
     render() {
+        let isOccupiedValue = 'POBIERANIE';
+        console.log(this.state.isOccupied);
+        if (this.state.isOccupied) {
+            isOccupiedValue = 'ZAJĘTĘ';
+        } else if (!this.state.isOccupied) {
+            isOccupiedValue =  'WOLNE';
+        }
+
         return (
-            <div className={'station'}>Stanowisko <span>1</span> <span>{this.state.isOccupied ? 'ZAJĘTĘ' : 'WOLNE'}</span></div>
+            <section className={'station'}>
+                <h1 className={'station__title'}>Stanowisko</h1>
+                <div className={'station__id'}>1</div>
+                <div className={'station__state'}>{isOccupiedValue}</div>
+            </section>
         )
     }
 

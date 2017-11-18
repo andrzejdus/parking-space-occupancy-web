@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
 import Station from './Station';
+import './main.scss';
 
 class Main extends Component {
     render() {
         return (
-            <div>
+            <div className={'main'}>
                 <Station />
-                <div><a href="/admin">Admin</a></div>
             </div>
         )
     }
