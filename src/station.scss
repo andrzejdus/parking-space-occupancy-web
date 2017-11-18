@@ -1,3 +1,9 @@
 .station {
-  background: grey;
+  &__title {
+    margin: 0;
+  }
+
+  &__id, &__state {
+    text-align: center;
+  }
 }

@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {Route} from 'react-router-dom';
 import Main from './Main';
 import Admin from './Admin';
-//import './App.css';
+import './App.scss';
 
 class App extends Component {
     render() {
