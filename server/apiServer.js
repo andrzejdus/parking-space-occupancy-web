@@ -170,8 +170,8 @@ module.exports = (PORT) => {
                 statusCode: 200,
                 message: 'Calibration data sent successfully.',
                 data: {
-                    measurementInterval: 3000,
-                    distanceHysteresis: 25,
+                    measurementInterval: 100,
+                    distanceHysteresis: 20,
                     splitDistance: 150
                 }
             });
