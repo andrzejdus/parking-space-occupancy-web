@@ -151,7 +151,7 @@ module.exports = (PORT) => {
     io.on('connection', function (socket) {
         const emitStation = () => {
             fetchStation('18fe34d3f4c9').then((station) => {
-                socket.emit('occupation', station);
+                socket.emit('station', station);
                 setTimeout(emitStation, 500);
             });
         };

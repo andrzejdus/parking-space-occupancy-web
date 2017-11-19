@@ -10,7 +10,7 @@ class Station extends Component {
 
         const io = socket('/');
         function subscribeToTimer(callback) {
-            io.on('occupation', (station) => {callback(station)});
+            io.on('station', (station) => {callback(station)});
         }
 
         subscribeToTimer((station) => {
