@@ -135,15 +135,15 @@ module.exports = (PORT) => {
         server.route({
             method: 'GET',
             path: '/{param*}',
-            handler: (request, h) => {
+            handler: (request, reply) => {
                 console.log('GET /{param*}');
 
-                let file = request.path.split('/').pop();
-                let path = 'dist/';
+                const requestFile = request.path.split('/').pop();
+                const isDirectory = requestFile.length == 0 || !requestFile.includes('.');
+                const fullFilesystemPath = 'dist/' + (isDirectory ? 'index.html' : requestFile );
 
-                path += fs.lstatSync(path + file).isFile() ? file : 'index.html';
-
-                return h.file(path);
+                console.log(`Sending file ${fullFilesystemPath}`);
+                return reply.file(fullFilesystemPath);
             }
         });
     });
