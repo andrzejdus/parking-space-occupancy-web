@@ -60,9 +60,8 @@ module.exports = (PORT) => {
 
             if (!allowedStationIds.includes(stationId)) {
                 return reply({
-                    statusCode: 400,
                     message: 'Station ID not allowed.'
-                });
+                }).code(400);
             }
 
             const itemTimestamp = Date.now().toString();
@@ -81,7 +80,6 @@ module.exports = (PORT) => {
                         console.log('Error saving data in database: ' + err);
 
                         reject({
-                            statusCode: 500,
                             message: 'Measurement save failed, error: ' + err
                         });
                     } else {
@@ -89,7 +87,6 @@ module.exports = (PORT) => {
 
                         response.created(request.path + '/' + itemTimestamp);
                         resolve({
-                            statusCode: 201,
                             message: 'Measurement saved successfully.'
                         });
                     }
@@ -115,7 +112,6 @@ module.exports = (PORT) => {
             console.log('GET /calibration');
 
             return reply({
-                statusCode: 200,
                 message: 'Calibration data sent successfully.',
                 data: {
                     measurementInterval: 100,
