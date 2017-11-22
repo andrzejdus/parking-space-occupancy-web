@@ -18,8 +18,8 @@ module.exports = (PORT) => {
     const STATION_IDS_TABLE = process.env.STATION_IDS_TABLE;
 
     // TODO What future will bring us? Noboady knows, but those values may be fetched from db someday (they say so)
-    const measurementInterval = 3000;
-    const distanceHysteresis = 25;
+    const measurementInterval = 100;
+    const distanceHysteresis = 20;
     const splitDistance = 150;
 
     console.log('Starting server');
@@ -125,9 +125,9 @@ module.exports = (PORT) => {
             return reply({
                 message: 'Calibration data sent successfully.',
                 data: {
-                    measurementInterval: 100,
-                    distanceHysteresis: 20,
-                    splitDistance: 150
+                    measurementInterval: measurementInterval,
+                    distanceHysteresis: distanceHysteresis,
+                    splitDistance: splitDistance
                 }
             });
         }
