@@ -17,7 +17,7 @@ module.exports = (PORT) => {
     const MEASUREMENTS_TABLE = process.env.MEASUREMENTS_TABLE;
     const STATION_IDS_TABLE = process.env.STATION_IDS_TABLE;
 
-    // TODO What future will bring us? Noboady knows, but those values may be fetched from db someday (they say so)
+    // TODO What future will bring us? Nobody knows, but those values may be fetched from db someday (they say so)
     const measurementInterval = 100;
     const distanceHysteresis = 20;
     const splitDistance = 150;
