@@ -1,11 +1,16 @@
 'use strict';
 
 require('dotenv').config();
+
+const Raven = require('raven');
+Raven.config(process.env.SENTRY_DSN).install();
+
 const Hapi = require('hapi');
 const Joi = require('joi');
 const AWS = require('aws-sdk');
 const fs = require('fs');
 const socketIo = require('socket.io');
+
 
 module.exports = (PORT) => {
     const REGION = process.env.REGION;

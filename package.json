@@ -33,6 +33,7 @@
     "inert": "^4.0.0",
     "joi": "^13.0.1",
     "node-sass": "^4.7.1",
+    "raven": "^2.2.1",
     "react": "^16.1.0",
     "react-dom": "^16.1.0",
     "react-google-login": "^3.0.2",
