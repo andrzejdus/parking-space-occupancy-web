@@ -50,6 +50,7 @@ module.exports = (PORT) => {
         });
     }).catch((error) => {
         console.log('Cannot get allowed station IDs from database, error', error);
+        Raven.captureException(error);
     });
 
     server.route({
@@ -80,18 +81,23 @@ module.exports = (PORT) => {
                 ddb.putItem({
                     'TableName': MEASUREMENTS_TABLE,
                     'Item': item
-                }, (err, data) => {
-                    if (err) {
-                        console.log('Error saving data in database: ' + err);
+                }, (error, data) => {
+                    if (error) {
+                        console.log('Error saving data in database: ' + error);
+
+                        Raven.captureException(error);
 
                         reject({
                             message: 'Measurement save failed, error: ' + err
+                            statusCode: 500,
+                            message: 'Measurement save failed, error: ' + error
                         });
                     } else {
                         console.log('Data saved in database');
 
                         response.created(request.path + '/' + itemTimestamp);
                         resolve({
+                            statusCode: 201,
                             message: 'Measurement saved successfully.'
                         });
                     }
