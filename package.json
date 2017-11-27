@@ -1,6 +1,6 @@
 {
   "name": "orange-sensors-web",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Web app for parking occupation sensors",
   "repository": "git@github.com:andrzejdus/orange-sensors-api.git",
   "main": "server.js",
@@ -9,7 +9,6 @@
     "watch": "node server.js",
     "build": "webpack --config webpack.prod.js",
     "build-dev": "webpack --config webpack.dev.js",
-    "prestart": "npm run build",
     "create-tables": "node server/createTables.js"
   },
   "author": "Andrzej Duś",
@@ -18,7 +17,6 @@
     "node": ">=6"
   },
   "dependencies": {
-    "aws-sdk": "^2.149.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
     "babel-preset-env": "^1.6.1",
@@ -33,6 +31,7 @@
     "inert": "^4.0.0",
     "joi": "^13.0.1",
     "node-sass": "^4.7.1",
+    "pg": "^7.4.0",
     "raven": "^2.2.1",
     "react": "^16.1.0",
     "react-dom": "^16.1.0",

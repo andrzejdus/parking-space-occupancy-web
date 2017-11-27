@@ -14,7 +14,8 @@ class Station extends Component {
         }
 
         subscribeToTimer((station) => {
-            this.setState({ isOccupied: station.data.stationStatus == 'occupied' ? true : false })
+            console.log(station.data);
+            this.setState({ isOccupied: station.data.isOccupied })
         });
     }
 

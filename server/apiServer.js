@@ -7,13 +7,12 @@ Raven.config(process.env.SENTRY_DSN).install();
 
 const Hapi = require('hapi');
 const Joi = require('joi');
-const AWS = require('aws-sdk');
+const Pg = require('pg');
 const fs = require('fs');
 const socketIo = require('socket.io');
 
 
 module.exports = (PORT) => {
-    const REGION = process.env.REGION;
     const MEASUREMENTS_TABLE = process.env.MEASUREMENTS_TABLE;
     const STATION_IDS_TABLE = process.env.STATION_IDS_TABLE;
 
@@ -22,9 +21,7 @@ module.exports = (PORT) => {
     const distanceHysteresis = 20;
     const splitDistance = 150;
 
-    console.log('Starting server');
     console.log('Port is', PORT);
-    console.log('Region is', REGION);
     console.log('Measurements table is', MEASUREMENTS_TABLE);
     console.log('Allowed station IDs table is', STATION_IDS_TABLE);
 
@@ -34,23 +31,23 @@ module.exports = (PORT) => {
     });
     const io = socketIo(server.listener);
 
-    AWS.config.region = REGION;
-    const ddb = new AWS.DynamoDB();
+    const pg = new Pg.Client({
+        connectionString: process.env.DATABASE_URL,
+        ssl: true
+    });
+
+    pg.connect();
 
     let allowedStationIds = [];
-    ddb.scan({
-        'TableName': STATION_IDS_TABLE,
-        'ReturnConsumedCapacity': 'TOTAL'
-    }).promise().then((data) => {
-        data.Items.forEach(function (element) {
-            const stationId = element.StationId.S;
+    pg.query(`SELECT * FROM ${STATION_IDS_TABLE}`).then(result => {
+        for (let row of result.rows) {
+            const stationId = row.station_id;
             console.log('Allowing station ID', stationId);
-
             allowedStationIds.push(stationId);
-        });
-    }).catch((error) => {
+        }
+    }).catch(error => {
         console.log('Cannot get allowed station IDs from database, error', error);
-        Raven.captureException(error);
+        Raven.captureException(error)
     });
 
     server.route({
@@ -60,7 +57,7 @@ module.exports = (PORT) => {
             console.log('POST /measurement');
 
             const payloadDecoded = request.payload;
-            console.log(payloadDecoded);
+            console.log('Payload', payloadDecoded);
 
             const stationId = payloadDecoded.stationId;
 
@@ -70,19 +67,17 @@ module.exports = (PORT) => {
                 }).code(400);
             }
 
-            const itemTimestamp = Date.now().toString();
-            const item = {
-                'Timestamp': { 'N': itemTimestamp },
-                'StationId': { 'S': stationId },
-                'Distance': { 'N': payloadDecoded.distance.toString() }
-            };
-
             const response = reply(new Promise((resolve, reject) => {
-                ddb.putItem({
-                    'TableName': MEASUREMENTS_TABLE,
-                    'Item': item
-                }, (error, data) => {
-                    if (error) {
+                pg.query(`INSERT INTO ${MEASUREMENTS_TABLE} VALUES(NOW(), '${stationId}', ${payloadDecoded.isOccupied}, ${payloadDecoded.distance}) RETURNING timestamp`)
+                    .then(result => {
+                        const timestamp = new Date(result.rows[0].timestamp).getTime();
+                        console.log('Data saved in database', result, );
+
+                        response.created(request.path + '/' + timestamp);
+                        resolve({
+                            message: 'Measurement saved successfully.'
+                        });
+                    }).catch(error => {
                         console.log('Error saving data in database: ' + error);
 
                         Raven.captureException(error);
@@ -90,15 +85,7 @@ module.exports = (PORT) => {
                         reject({
                             message: 'Measurement save failed, error: ' + error
                         });
-                    } else {
-                        console.log('Data saved in database');
-
-                        response.created(request.path + '/' + itemTimestamp);
-                        resolve({
-                            message: 'Measurement saved successfully.'
-                        });
-                    }
-                });
+                    });
             }));
 
             return response;
@@ -107,7 +94,8 @@ module.exports = (PORT) => {
             validate: {
                 payload: {
                     stationId: Joi.string().required(),
-                    distance: Joi.number().required()
+                    distance: Joi.number().required(),
+                    isOccupied: Joi.boolean().required()
                 }
             }
         }
@@ -130,6 +118,7 @@ module.exports = (PORT) => {
         }
     });
 
+    // TODO err => error
     server.register(require('inert'), (err) => {
         if (err) {
             console.log(err);
@@ -154,7 +143,7 @@ module.exports = (PORT) => {
 
     io.on('connection', function (socket) {
         const emitStation = () => {
-            fetchStation('18fe34d3f4c9').then((station) => {
+            fetchStation('18fe34dea74c').then((station) => {
                 socket.emit('station', station);
                 setTimeout(emitStation, 500);
             });
@@ -163,6 +152,7 @@ module.exports = (PORT) => {
         setTimeout(emitStation, 0);
     });
 
+    console.log('Starting server');
     server.start((err) => {
         if (err) {
             throw err;
@@ -171,42 +161,35 @@ module.exports = (PORT) => {
         console.log('Server running at: ', server.info.uri);
     });
 
+    // TODO pg.end().catch(error => console.log('Error closing connection', error));
+
     function fetchStation(stationId) {
-        const params = {
-            TableName : MEASUREMENTS_TABLE,
-            ScanIndexForward: false,
-            Limit: 1,
-            KeyConditionExpression: 'StationId = :requestedStationId',
-            ExpressionAttributeValues: {
-                ':requestedStationId': { 'S': stationId }
-            }
-        };
-
         return new Promise((resolve, reject) => {
-            ddb.query(params).promise().then((data) => {
-                if (data.Count > 0) {
-                    const item = data.Items.shift();
-                    const recentDistance = parseFloat(item.Distance.N);
+            pg.query(`SELECT * FROM ${MEASUREMENTS_TABLE} WHERE station_id = '${stationId}' ORDER BY timestamp DESC LIMIT 1`)
+                .then(result => {
+                    if (result.rowCount > 0) {
+                        const firstRow = result.rows[0];
 
-                    const stationStatus = recentDistance > splitDistance ? 'unoccupied' : 'occupied';
+                        resolve({
+                            message: 'Station data sent successfully.',
+                            data: {
+                                timestamp: firstRow.timestamp,
+                                isOccupied: firstRow.is_occupied,
+                                distance: firstRow.distance
+                            }
+                        });
+                    } else {
+                        resolve({
+                            message: `Station with id ${stationId} not found.`
+                        });
+                    }
+                }).catch(error => {
+                    console.log(error);
 
-                    resolve({
-                        message: 'Station data sent successfully.',
-                        data: {
-                            lastMeasureTimestamp: item.Timestamp.N,
-                            stationStatus: stationStatus
-                        }
-                    });
-                } else {
-                    resolve({
-                        message: `Station with id ${stationId} not found.`
-                    });
-                }
-            }).catch((error) => {
-                console.log(error);
+                    Raven.captureException(error);
 
-                reject(error);
-            });
+                    reject(error);
+                });
         });
     }
 };
