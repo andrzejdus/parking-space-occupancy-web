@@ -88,8 +88,6 @@ module.exports = (PORT) => {
                         Raven.captureException(error);
 
                         reject({
-                            message: 'Measurement save failed, error: ' + err
-                            statusCode: 500,
                             message: 'Measurement save failed, error: ' + error
                         });
                     } else {
@@ -97,7 +95,6 @@ module.exports = (PORT) => {
 
                         response.created(request.path + '/' + itemTimestamp);
                         resolve({
-                            statusCode: 201,
                             message: 'Measurement saved successfully.'
                         });
                     }
@@ -194,7 +191,6 @@ module.exports = (PORT) => {
                     const stationStatus = recentDistance > splitDistance ? 'unoccupied' : 'occupied';
 
                     resolve({
-                        statusCode: 200,
                         message: 'Station data sent successfully.',
                         data: {
                             lastMeasureTimestamp: item.Timestamp.N,
@@ -203,7 +199,6 @@ module.exports = (PORT) => {
                     });
                 } else {
                     resolve({
-                        statusCode: 404,
                         message: `Station with id ${stationId} not found.`
                     });
                 }
