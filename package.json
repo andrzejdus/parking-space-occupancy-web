@@ -9,7 +9,8 @@
     "watch": "node server.js",
     "build": "webpack --config webpack.prod.js",
     "build-dev": "webpack --config webpack.dev.js",
-    "create-tables": "node server/createTables.js"
+    "create-tables": "node server/createTables.js",
+    "postinstall": "npm run build"
   },
   "author": "Andrzej Duś",
   "license": "MIT",
