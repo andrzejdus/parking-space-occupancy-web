@@ -8,11 +8,40 @@ Raven.config(process.env.SENTRY_DSN).install();
 const Hapi = require('hapi');
 const Joi = require('joi');
 const Pg = require('pg');
-const fs = require('fs');
 const socketIo = require('socket.io');
 
 
 module.exports = (PORT) => {
+    function fetchStation(stationId) {
+        return new Promise((resolve, reject) => {
+            pg.query(`SELECT * FROM ${MEASUREMENTS_TABLE} WHERE station_id = '${stationId}' ORDER BY timestamp DESC LIMIT 1`)
+                .then(result => {
+                    if (result.rowCount > 0) {
+                        const firstRow = result.rows[0];
+
+                        resolve({
+                            message: 'Station data sent successfully.',
+                            data: {
+                                timestamp: firstRow.timestamp,
+                                isOccupied: firstRow.is_occupied,
+                                distance: firstRow.distance
+                            }
+                        });
+                    } else {
+                        resolve({
+                            message: `Station with id ${stationId} not found.`
+                        });
+                    }
+                }).catch(error => {
+                console.log(error);
+
+                Raven.captureException(error);
+
+                reject(error);
+            });
+        });
+    }
+
     const MEASUREMENTS_TABLE = process.env.MEASUREMENTS_TABLE;
     const STATION_IDS_TABLE = process.env.STATION_IDS_TABLE;
 
@@ -29,25 +58,35 @@ module.exports = (PORT) => {
     server.connection({
         port: PORT
     });
-    const io = socketIo(server.listener);
 
     const pg = new Pg.Client({
         connectionString: process.env.DATABASE_URL,
         ssl: true
     });
 
-    pg.connect();
+    const allowedStationIds = [];
 
-    let allowedStationIds = [];
-    pg.query(`SELECT * FROM ${STATION_IDS_TABLE}`).then(result => {
-        for (let row of result.rows) {
-            const stationId = row.station_id;
-            console.log('Allowing station ID', stationId);
-            allowedStationIds.push(stationId);
-        }
-    }).catch(error => {
-        console.log('Cannot get allowed station IDs from database, error', error);
-        Raven.captureException(error)
+    server.on('start', () => {
+        console.log('Server running at: ', server.info.uri);
+
+        pg.connect();
+
+        pg.query(`SELECT * FROM ${STATION_IDS_TABLE}`).then(result => {
+            for (let row of result.rows) {
+                const stationId = row.station_id;
+                console.log('Allowing station ID', stationId);
+                allowedStationIds.push(stationId);
+            }
+        }).catch(error => {
+            console.log('Cannot get allowed station IDs from database, error', error);
+            Raven.captureException(error)
+        });
+
+    });
+
+    server.on('stop', () => {
+        console.log('Stopping server');
+        pg.end().catch(error => console.log('Error closing connection', error));
     });
 
     server.route({
@@ -119,9 +158,9 @@ module.exports = (PORT) => {
     });
 
     // TODO err => error
-    server.register(require('inert'), (err) => {
-        if (err) {
-            console.log(err);
+    server.register(require('inert'), (error) => {
+        if (error) {
+            console.log(error);
             return;
         }
 
@@ -141,6 +180,8 @@ module.exports = (PORT) => {
         });
     });
 
+    const io = socketIo(server.listener);
+
     io.on('connection', function (socket) {
         const emitStation = () => {
             fetchStation('18fe34dea74c').then((station) => {
@@ -152,44 +193,5 @@ module.exports = (PORT) => {
         setTimeout(emitStation, 0);
     });
 
-    console.log('Starting server');
-    server.start((err) => {
-        if (err) {
-            throw err;
-        }
-
-        console.log('Server running at: ', server.info.uri);
-    });
-
-    // TODO pg.end().catch(error => console.log('Error closing connection', error));
-
-    function fetchStation(stationId) {
-        return new Promise((resolve, reject) => {
-            pg.query(`SELECT * FROM ${MEASUREMENTS_TABLE} WHERE station_id = '${stationId}' ORDER BY timestamp DESC LIMIT 1`)
-                .then(result => {
-                    if (result.rowCount > 0) {
-                        const firstRow = result.rows[0];
-
-                        resolve({
-                            message: 'Station data sent successfully.',
-                            data: {
-                                timestamp: firstRow.timestamp,
-                                isOccupied: firstRow.is_occupied,
-                                distance: firstRow.distance
-                            }
-                        });
-                    } else {
-                        resolve({
-                            message: `Station with id ${stationId} not found.`
-                        });
-                    }
-                }).catch(error => {
-                    console.log(error);
-
-                    Raven.captureException(error);
-
-                    reject(error);
-                });
-        });
-    }
+    server.start();
 };
