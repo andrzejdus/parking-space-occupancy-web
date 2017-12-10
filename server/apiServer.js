@@ -157,7 +157,6 @@ module.exports = (PORT) => {
         }
     });
 
-    // TODO err => error
     server.register(require('inert'), (error) => {
         if (error) {
             console.log(error);
@@ -182,11 +181,14 @@ module.exports = (PORT) => {
 
     const io = socketIo(server.listener);
 
-    io.on('connection', function (socket) {
+    io.on('connection', socket => {
         const emitStation = () => {
             fetchStation('18fe34dea74c').then((station) => {
                 socket.emit('station', station);
-                setTimeout(emitStation, 500);
+
+                if (socket.connected) {
+                    setTimeout(emitStation, 500);
+                }
             });
         };
 
