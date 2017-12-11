@@ -24,15 +24,15 @@ Now you can open [http://localhost:8080](http://localhost:8080) to view the app 
 npm install
 npm start
 ```
-Node.js app will serve static content, respond to API endpoints and communicate with client using [socket.io](https://github.com/socketio/socket.io).
+Node.js app will serve static content (from `dist` directory), respond to API endpoints and communicate with client using [socket.io](https://github.com/socketio/socket.io).
 
 # Scripts
 ### `npm start`
 Runs the app in the development or production mode (depending on NODE_ENV).<br>
 Open [http://localhost:8080](http://localhost:8080) to view it in the browser.
 
-In production mode only node server is started.
-In development webpack which proxies requests to node server is started too.
+In production mode only Node.JS server is started.
+In development webpack, which proxies requests to node server, is started too.
 
 ### `watch`
 ### `build`
@@ -40,5 +40,5 @@ In development webpack which proxies requests to node server is started too.
 ### `create-tables`
 
 # Main modules
-Client - React app that shows current parking sensor status
-Server - Node.js API & web server
+* Client - React app that shows current parking sensor status
+* Server - Node.js API & web server
