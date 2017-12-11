@@ -183,10 +183,25 @@ module.exports = (PORT) => {
 
 
     let currentStation;
-    function poolStation() {
-        if (io.engine.clientsCount == 0) {
+    let isPooling = false;
+    function startPooling() {
+        if (isPooling) {
             return;
         }
+
+        isPooling = true;
+        poolStation();
+    }
+
+    function stopPooling() {
+        isPooling = false;
+    }
+
+    function poolStation() {
+        if (!isPooling) {
+            return;
+        }
+
         fetchStation('18fe34dea74c').then((station) => {
             currentStation = station;
 
@@ -195,7 +210,7 @@ module.exports = (PORT) => {
     }
 
     io.on('connection', socket => {
-        poolStation();
+        startPooling();
 
         let lastEmitTimestamp;
         const emitStation = () => {
@@ -209,6 +224,12 @@ module.exports = (PORT) => {
                 setTimeout(emitStation, 500);
             }
         };
+
+        socket.on('disconnect', reason => {
+            if (io.engine.clientsCount == 0) {
+                stopPooling();
+            }
+        });
 
         setTimeout(emitStation, 0);
     });
