@@ -181,15 +181,33 @@ module.exports = (PORT) => {
 
     const io = socketIo(server.listener);
 
-    io.on('connection', socket => {
-        const emitStation = () => {
-            fetchStation('18fe34dea74c').then((station) => {
-                socket.emit('station', station);
 
-                if (socket.connected) {
-                    setTimeout(emitStation, 500);
-                }
-            });
+    let currentStation;
+    function poolStation() {
+        if (io.engine.clientsCount == 0) {
+            return;
+        }
+        fetchStation('18fe34dea74c').then((station) => {
+            currentStation = station;
+
+            setTimeout(poolStation, 500);
+        });
+    }
+
+    io.on('connection', socket => {
+        poolStation();
+
+        let lastEmitTimestamp;
+        const emitStation = () => {
+            let timestamp = currentStation && currentStation.data.timestamp.getTime();
+            if (lastEmitTimestamp != timestamp) {
+                socket.emit('station', currentStation);
+                lastEmitTimestamp = timestamp;
+            }
+
+            if (socket.connected) {
+                setTimeout(emitStation, 500);
+            }
         };
 
         setTimeout(emitStation, 0);
