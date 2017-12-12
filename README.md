@@ -1,3 +1,5 @@
+[![dependencies Status](https://david-dm.org/andrzejdus/parking-space-occupancy-web/status.svg)](https://david-dm.org/andrzejdus/parking-space-occupancy-web)
+
 # Parking Space Occupancy Sensors Web Client & Server
 Web client &amp; server for parking space occupancy sensors. This is a companion app for [NodeMCU based esp8266 app](https://github.com/andrzejdus/parking-space-occupancy-nodemcu).
 
