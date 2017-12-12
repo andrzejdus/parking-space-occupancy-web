@@ -13,7 +13,7 @@ const pg = new Pg.Client({
 
 pg.connect();
 
-const measurementsTable = pg.query(`CREATE TABLE ${MEASUREMENTS_TABLE}(timestamp TIMESTAMP NOT NULL, station_id VARCHAR(12) NOT NULL, is_occupied BOOL NOT NULL, distance INT NOT NULL)`)
+const measurementsTable = pg.query(`CREATE TABLE ${MEASUREMENTS_TABLE} (timestamp TIMESTAMP NOT NULL PRIMARY KEY, station_id VARCHAR(12) NOT NULL, is_occupied BOOL NOT NULL, distance INT NOT NULL)`)
     .then(result => console.log(`${MEASUREMENTS_TABLE} created`))
     .catch(error => console.log(error));
 
