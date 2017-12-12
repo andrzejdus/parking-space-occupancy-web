@@ -33,7 +33,7 @@ module.exports = (PORT) => {
                         });
                     } else {
                         resolve({
-                            message: `Station with id ${stationId} not found.`
+                            message: `Station with id ${stationIds} not found.`
                         });
                     }
                 }).catch(error => {
@@ -93,6 +93,7 @@ module.exports = (PORT) => {
         pg.end().catch(error => console.log('Error closing connection', error));
     });
 
+    let lastPayload;
     server.route({
         method: 'POST',
         path:'/measurement',
@@ -109,6 +110,17 @@ module.exports = (PORT) => {
                     message: 'Station ID not allowed.'
                 }).code(400);
             }
+
+            console.log(lastPayload, payloadDecoded);
+            if (lastPayload &&
+                    lastPayload.stationId == stationId &&
+                    lastPayload.isOccupied == payloadDecoded.isOccupied &&
+                    lastPayload.distance == payloadDecoded.distance) {
+                return reply({
+                    message: 'Payload is the same as previous on.'
+                }).code(409);
+            }
+            lastPayload = payloadDecoded;
 
             const response = reply(new Promise((resolve, reject) => {
                 pg.query(`INSERT INTO ${MEASUREMENTS_TABLE} VALUES(NOW(), '${stationId}', ${payloadDecoded.isOccupied}, ${payloadDecoded.distance}) RETURNING timestamp`)
