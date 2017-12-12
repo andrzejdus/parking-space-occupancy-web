@@ -12,9 +12,13 @@ const socketIo = require('socket.io');
 
 
 module.exports = (PORT) => {
-    function fetchStation(stationId) {
+    function fetchStation(stationIds) {
         return new Promise((resolve, reject) => {
-            pg.query(`SELECT * FROM ${MEASUREMENTS_TABLE} WHERE station_id = '${stationId}' ORDER BY timestamp DESC LIMIT 1`)
+            const stationIdsQuery = stationIds.reduce((accumulator, currentValue, currentIndex) => {
+                return accumulator + (currentIndex > 0 ? ', ' : '') + "'" + currentValue + "'";
+            }, '');
+
+            pg.query(`SELECT * FROM ${MEASUREMENTS_TABLE} WHERE station_id IN (${stationIdsQuery}) ORDER BY timestamp DESC LIMIT 1`)
                 .then(result => {
                     if (result.rowCount > 0) {
                         const firstRow = result.rows[0];
@@ -33,12 +37,12 @@ module.exports = (PORT) => {
                         });
                     }
                 }).catch(error => {
-                console.log(error);
+                    console.log(error);
 
-                Raven.captureException(error);
+                    Raven.captureException(error);
 
-                reject(error);
-            });
+                    reject(error);
+                });
         });
     }
 
@@ -202,7 +206,7 @@ module.exports = (PORT) => {
             return;
         }
 
-        fetchStation('18fe34dea74c').then((station) => {
+        fetchStation(['18fe34dea74c']).then((station) => {
             currentStation = station;
 
             setTimeout(poolStation, 500);
