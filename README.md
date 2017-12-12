@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/andrzejdus/parking-space-occupancy-web.svg?branch=master)](https://travis-ci.org/andrzejdus/parking-space-occupancy-web)
 [![dependencies Status](https://david-dm.org/andrzejdus/parking-space-occupancy-web/status.svg)](https://david-dm.org/andrzejdus/parking-space-occupancy-web)
 
 # Parking Space Occupancy Sensors Web Client & Server
