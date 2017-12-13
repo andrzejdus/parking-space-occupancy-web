@@ -51,7 +51,6 @@ module.exports = (PORT) => {
 
     // TODO What future will bring us? Nobody knows, but those values may be fetched from db someday (they say so)
     const measurementInterval = 100;
-    const distanceHysteresis = 20;
     const splitDistance = 150;
 
     console.log('Port is', PORT);
@@ -158,15 +157,14 @@ module.exports = (PORT) => {
 
     server.route({
         method: 'GET',
-        path:'/calibration',
+        path:'/configuration',
         handler: function (request, reply) {
-            console.log('GET /calibration');
+            console.log('GET /configuration');
 
             return reply({
-                message: 'Calibration data sent successfully.',
+                message: 'Configuration data sent successfully.',
                 data: {
                     measurementInterval: measurementInterval,
-                    distanceHysteresis: distanceHysteresis,
                     splitDistance: splitDistance
                 }
             });
